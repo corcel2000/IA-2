@@ -45,13 +45,13 @@ document.addEventListener("DOMContentLoaded", function () {
         let passwordInput = document.getElementById("login-password").value;
 
         // Simulated user credentials (Replace with real backend validation)
-        const validUser = {
+        const validUser  = {
             username: "testuser",
             email: "test@example.com",
             password: "password123"
         };
 
-        if ((identifierInput === validUser.email || identifierInput === validUser.username) && passwordInput === validUser.password) {
+        if ((identifierInput === validUser .email || identifierInput === validUser .username) && passwordInput === validUser .password) {
             alert("Login successful!");
             window.location.href = "creation_studio.html";
         } else {
@@ -95,22 +95,99 @@ function addToCart(productId) {
         }
     }
 }
+// Event listener for Checkout button
+document.getElementById("checkout").addEventListener("click", () => {
+    if (cart.length > 0) {
+        alert("Proceeding to checkout...");
+        // Redirect or load invoice page
+        window.location.href = "Invoice.html"; // Change to your invoice page
+    } else {
+        alert("Your cart is empty. Please add items to the cart.");
+    }
+});
+
+// Event listener for Cancel button
+document.getElementById("cancel").addEventListener("click", () => {
+    cart = []; // Clear the cart
+    alert("Your cart has been cleared.");
+    updateCart();
+});
+
+// Event listener for Exit button
+document.getElementById("exit").addEventListener("click", () => {
+    window.location.href = "creation_studio.html"; // Redirect to the home page
+});
+
+
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert(`Product removed from cart.`);
+    updateCart();
+}
 
 function updateCart() {
     const cartIcon = document.querySelector(".cart-icon");
+    const cartItemsContainer = document.getElementById("cart-items");
     if (cartIcon) {
         cartIcon.innerHTML = `🛒 (${cart.length})`;
     }
+    if (cartItemsContainer) {
+        cartItemsContainer.innerHTML = ""; // Clear existing items
+        cart.forEach(item => {
+            const itemElement = document.createElement("div");
+            itemElement.innerHTML = `
+                <img src="${item.img}" alt="${item.name}" />
+                <p>${item.name} - $${item.price.toFixed(2)}</p>
+                <button onclick="removeFromCart(${item.id})">Cancel</button>
+            `;
+            cartItemsContainer.appendChild(itemElement);
+        });
+    }
     console.log(cart);
 }
-
 function loadInvoice() {
-    // Same logic as before
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const invoiceItemsContainer = document.getElementById("invoice-items");
+    const subtotalElement = document.getElementById("subtotal");
+    const taxElement = document.getElementById("tax");
+    const totalElement = document.getElementById("total");
+
+    let subtotal = 0;
+
+    // Clear existing items
+    invoiceItemsContainer.innerHTML = "";
+
+    // Populate invoice items
+    cart.forEach(item => {
+        const itemElement = document.createElement("tr");
+        itemElement.innerHTML = `
+            <td>${item.name}</td>
+            <td>$${item.price.toFixed(2)}</td>
+        `;
+        invoiceItemsContainer.appendChild(itemElement);
+        subtotal += item.price;
+    });
+
+    // Calculate tax and total
+    const tax = subtotal * 0.10; // Assuming 10% tax
+    const total = subtotal + tax;
+
+    // Update totals in the invoice
+    subtotalElement.innerText = subtotal.toFixed(2);
+    taxElement.innerText = tax.toFixed(2);
+    totalElement.innerText = total.toFixed(2);
 }
 
+// Call loadInvoice on window load
 window.onload = () => {
     if (document.getElementById("invoice-items")) {
         loadInvoice();
     }
-    updateCart();
-};
+    updateCart(); // Ensure the cart is updated on the shop page
+}; 
+
+
+function loadInvoice() {
+    // Same logic as before
+}
